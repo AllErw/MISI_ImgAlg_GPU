@@ -4,3 +4,6 @@
 *.ptx
 *.cubin
 *.fatbin
+MISI_ImgAlg_GPU.exp
+MISI_ImgAlg_GPU.dll
+MISI_ImgAlg_GPU.lib
