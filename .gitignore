@@ -7,3 +7,8 @@
 MISI_ImgAlg_GPU.exp
 MISI_ImgAlg_GPU.dll
 MISI_ImgAlg_GPU.lib
+.vs/VSWorkspaceState.json
+.vs/ProjectSettings.json
+.vs/slnx.sqlite
+.vs/MISI_ImgAlg_GPU/v16/Browse.VC.db
+.vs/MISI_ImgAlg_GPU/v16/.suo

@@ -37,8 +37,7 @@ void DnS_1rec_fixed_pos_GPU(
                                   powf(yimg - source_locations[srccnt+Nsrc] , 2) + 
                                   powf(zimg - source_locations[srccnt+Nsrc2] , 2) );
             tcnt = roundf( (dist_refl_hydr + dist_src_refl)*feff );
-			tcnt = fminf( tcnt , Nt-1 );	// To ensure time sample actually exists! -1 due to C++ array indexing starting at 0!
-			image[imgcnt] += rf_data[tcnt + srccnt * Nt];
+			if (tcnt < Nt) { image[imgcnt] += rf_data[tcnt + srccnt * Nt]; }	// To ensure time sample actually exists!
         }
     }
 	

@@ -1,20 +1,31 @@
 % Benchmark CPU vs GPU
 
 % Check if library is loaded; do so if not.
-addpath('N:\Matlab scripts\aaMEX code');
-addpath('N:\dll code\IntDev_ImgAlg');
-if ~libisloaded('IntDevImgAlgGPU')
+freshly_loaded = 0;
+if ~libisloaded('MISI_CPU')
     warning off;
-        loadlibrary('IntDevImgAlgGPU.dll','IntDevImgAlgGPU.h');
+    loadlibrary('C:\Users\Erwin Alles\Documents\GitHub\MISI_ImgAlg\x64\Release\MISI_ImgAlg.dll',...
+                'C:\Users\Erwin Alles\Documents\GitHub\MISI_ImgAlg\MISI_ImgAlg.h',...
+                'alias','MISI_CPU');
     warning on;
-    disp('Libray loaded.');
-    libfunctionsview('IntDevImgAlgGPU');
-    return;
+    disp('Library loaded.');
+    libfunctionsview('MISI_CPU');
+    freshly_loaded = freshly_loaded+1;
 end
-
+if ~libisloaded('MISI_GPU')
+    warning off;
+    loadlibrary('C:\Users\Erwin Alles\Documents\GitHub\MISI_ImgAlg_GPU\MISI_ImgAlg_GPU.dll',...
+                'C:\Users\Erwin Alles\Documents\GitHub\MISI_ImgAlg_GPU\MISI_ImgAlg_GPU.h',...
+                'alias','MISI_GPU');
+    warning on;
+    disp('Library loaded.');
+    libfunctionsview('MISI_GPU');
+    freshly_loaded = freshly_loaded+1;
+end
+if freshly_loaded>0;  return;     end
 
 %% Set parameters and generate RF data:
-METHOD = 1;     % Flag for reconstruction: 1 = DAS, 2 = DMAS
+METHOD = 2;     % Flag for reconstruction: 1 = DAS, 2 = DMAS
 
 % Load RF data:
 load('test_data.mat');
@@ -24,7 +35,7 @@ rf_data = data.RFdata';
 receiver_location = data.hydrophone;
 source_locations = data.sourcecoors;
 
-delta = [2 5 10 20 50 100]*1E-6;
+delta = [10 20 50 100]*1E-6;%[2 5 10 20 50 100]*1E-6;
 delta = delta(end:-1:1);
 
 Npix = zeros(size(delta));
@@ -54,9 +65,11 @@ for dcnt = 1:length(delta)
     for aa = 1:(10 - 9*(Nimg>1E5)) % to disable averaging when Nimg >100k
         switch METHOD
             case 1
-                img = DnS_1rec_fixed_position_dll_no_envelope(rf_data,source_locations,receiver_location,image_coordinates,c,fsamp,1.0);
+                [~,~,~,~,imgCPU] = calllib('MISI_CPU','DnS_1rec_fixed_pos',...
+                                  rf_data,source_locations,receiver_location,image_coordinates,c,fsamp,Nsrc,Nt,Nimg,image);
             case 2
-                img = DMnS_1rec_fixed_position_mex(rf_data,source_locations,receiver_location,image_coordinates,c,fsamp,1);
+                [~,~,~,~,imgCPU] = calllib('MISI_CPU','DMnS_1rec_fixed_pos',...
+                                  rf_data,source_locations,receiver_location,image_coordinates,c,fsamp,Nsrc,Nt,Nimg,image);
         end
     end
     tCPU = toc/aa;
@@ -65,19 +78,20 @@ for dcnt = 1:length(delta)
     % *** GPU: ***
     switch METHOD
         case 1
-%             CUDAparams = int32([1024,(Nimg+1024-1) / 1024]);
-            CUDAparams = int32([1024,1]);
+            CUDAparams = int32([1024,(Nimg+1024-1) / 1024]);
+%             CUDAparams = int32([1024,1]);
         case 2
-            CUDAparams = int32([1024,1]);
+            CUDAparams = int32([512,1]);
+%             CUDAparams = int32([1024,1]);
     end
     tic;
     for aa = 1:(10 - 9*(Nimg>1E5)) % to disable averaging when Nimg >100k
         switch METHOD
             case 1
-                [~,~,~,~,~,imgGPU] = calllib('IntDevImgAlgGPU','DnS_1rec_fixed_pos_GPU_chunks_interface',...
-                                  rf_data,source_locations,receiver_location,image_coordinates,c,fsamp,Nsrc,Nt,Nimg,CUDAparams,image);
+                [~,~,~,~,~,imgGPU] = calllib('MISI_GPU','DnS_1rec_fixed_pos_GPU_chunks_interface',...
+                                     rf_data,source_locations,receiver_location,image_coordinates,c,fsamp,Nsrc,Nt,Nimg,CUDAparams,image);
             case 2
-                [~,~,~,~,~,imgGPU] = calllib('IntDevImgAlgGPU','DMnS_1rec_fixed_pos_GPU_chunks_interface',...
+                [~,~,~,~,~,imgGPU] = calllib('MISI_GPU','DMnS_1rec_fixed_pos_GPU_chunks_interface',...
                                      rf_data,source_locations,receiver_location,image_coordinates,c,fsamp,Nsrc,Nt,Nimg,CUDAparams,image);
         end
     end
