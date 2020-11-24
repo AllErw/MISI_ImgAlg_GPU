@@ -35,7 +35,9 @@ rf_data = data.RFdata';
 receiver_location = data.hydrophone;
 source_locations = data.sourcecoors;
 
-delta = [10 20 50 100]*1E-6;%[2 5 10 20 50 100]*1E-6;
+% delta = [10 20 50 100]*1E-6;
+delta = [5 10 20 50 100]*1E-6;
+% delta = [2 5 10 20 50 100]*1E-6;
 delta = delta(end:-1:1);
 
 Npix = zeros(size(delta));

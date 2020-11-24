@@ -1,3 +1,6 @@
 1. Run "Command prompt.bat"
 2. From command prompt, run "init.bat"
 3. From command prompt, run "nvcc -o MISI_ImgAlg_GPU.dll --shared MISI_ImgAlg_GPU.cu"
+
+Or, slightly faster (ca. 3% for DMAS):
+3. From command prompt, run "nvcc -o MISI_ImgAlg_GPU.dll --shared MISI_ImgAlg_GPU.cu --use_fast_math"
