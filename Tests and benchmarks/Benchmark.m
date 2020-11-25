@@ -25,7 +25,9 @@ end
 if freshly_loaded>0;  return;     end
 
 %% Set parameters and generate RF data:
-METHOD = 2;     % Flag for reconstruction: 1 = DAS, 2 = DMAS
+METHOD = 2;     % Flag for reconstruction: 1 = DAS, 2 = DMAS, 3 = SLSC
+m = int32(3);
+w = int32(10);
 
 % Load RF data:
 load('test_data.mat');
@@ -35,7 +37,9 @@ rf_data = data.RFdata';
 receiver_location = data.hydrophone;
 source_locations = data.sourcecoors;
 
-delta = [10 20 50 100]*1E-6;%[2 5 10 20 50 100]*1E-6;
+% delta = [2 5 10 20 50 100]*1E-6;
+delta = [10 20 50 100]*1E-6;
+% delta = [50]*1E-6;
 delta = delta(end:-1:1);
 
 Npix = zeros(size(delta));
@@ -61,8 +65,10 @@ for dcnt = 1:length(delta)
     %% Perform the actual benchmarking:
 
     % *** CPU: ***
+    aa = 0; time = 0;
     tic;
-    for aa = 1:(10 - 9*(Nimg>1E5)) % to disable averaging when Nimg >100k
+    while time<1    % ensure that at least 1 s was spent - repeat reconstructions if not
+        aa = aa+1;
         switch METHOD
             case 1
                 [~,~,~,~,imgCPU] = calllib('MISI_CPU','DnS_1rec_fixed_pos',...
@@ -70,22 +76,28 @@ for dcnt = 1:length(delta)
             case 2
                 [~,~,~,~,imgCPU] = calllib('MISI_CPU','DMnS_1rec_fixed_pos',...
                                   rf_data,source_locations,receiver_location,image_coordinates,c,fsamp,Nsrc,Nt,Nimg,image);
+            case 3
+                [~,~,~,~,imgCPU] = calllib('MISI_CPU','SLSC_1rec_fixed_pos',...
+                                  rf_data,source_locations,receiver_location,image_coordinates,c,fsamp,Nsrc,Nt,Nimg,m,w,image);
         end
+        time = toc;
     end
-    tCPU = toc/aa;
+    tCPU = time/aa;
     timeCPU(dcnt) = tCPU;
 
     % *** GPU: ***
     switch METHOD
         case 1
             CUDAparams = int32([1024,(Nimg+1024-1) / 1024]);
-%             CUDAparams = int32([1024,1]);
         case 2
             CUDAparams = int32([512,1]);
-%             CUDAparams = int32([1024,1]);
+        case 3
+            CUDAparams = int32([128,4,m,w]);
     end
+    aa = 0; time = 0;
     tic;
-    for aa = 1:(10 - 9*(Nimg>1E5)) % to disable averaging when Nimg >100k
+    while time<1
+        aa = aa+1;
         switch METHOD
             case 1
                 [~,~,~,~,~,imgGPU] = calllib('MISI_GPU','DnS_1rec_fixed_pos_GPU_chunks_interface',...
@@ -93,13 +105,26 @@ for dcnt = 1:length(delta)
             case 2
                 [~,~,~,~,~,imgGPU] = calllib('MISI_GPU','DMnS_1rec_fixed_pos_GPU_chunks_interface',...
                                      rf_data,source_locations,receiver_location,image_coordinates,c,fsamp,Nsrc,Nt,Nimg,CUDAparams,image);
+            case 3
+                [~,~,~,~,~,imgGPU] = calllib('MISI_GPU','SLSC_1rec_fixed_pos_GPU_chunks_interface',...
+                                     rf_data,source_locations,receiver_location,image_coordinates,c,fsamp,Nsrc,Nt,Nimg,CUDAparams,image);
         end
+        time = toc;
     end
-    tGPU = toc/aa;
+    tGPU = time/aa;
     timeGPU(dcnt) = tGPU;
 
 %     fprintf('%3.1E pixels, CPU time: %5.3f s, GPU: %5.3f s.\n',Nimg,tCPU,tGPU);
 %     fprintf('Difference between CPU and GPU: %5.3f%%\n',100*sum(abs(img-imgGPU)) / sum(abs(img)));
+    subplot(3,2,1);
+    imagesc(xaxis,zaxis,reshape(imgCPU,length(xaxis),length(zaxis))');
+    axis equal tight;colormap hot;
+    
+    subplot(3,2,2);
+    imagesc(xaxis,zaxis,reshape(imgGPU,length(xaxis),length(zaxis))')
+    axis equal tight;
+    
+    subplot(3,1,[2 3]);
     loglog(Npix , [timeCPU ; timeGPU]);
     legend('CPU','GPU','location','northwest');
     xlabel('Number of pixels');
