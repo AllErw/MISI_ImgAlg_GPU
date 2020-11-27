@@ -25,7 +25,7 @@ end
 if freshly_loaded>0;  return;     end
 
 %% Set parameters and generate RF data:
-METHOD = 2;     % Flag for reconstruction: 1 = DAS, 2 = DMAS, 3 = SLSC
+METHOD = 3;     % Flag for reconstruction: 1 = DAS, 2 = DMAS, 3 = SLSC
 m = int32(3);
 w = int32(10);
 
@@ -38,8 +38,8 @@ receiver_location = data.hydrophone;
 source_locations = data.sourcecoors;
 
 % delta = [2 5 10 20 50 100]*1E-6;
-delta = [10 20 50 100]*1E-6;
-% delta = [50]*1E-6;
+% delta = [10 20 50 100]*1E-6;
+delta = [50]*1E-6;
 delta = delta(end:-1:1);
 
 Npix = zeros(size(delta));
