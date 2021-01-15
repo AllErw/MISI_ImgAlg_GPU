@@ -12,3 +12,4 @@ MISI_ImgAlg_GPU.lib
 .vs/slnx.sqlite
 .vs/MISI_ImgAlg_GPU/v16/Browse.VC.db
 .vs/MISI_ImgAlg_GPU/v16/.suo
+*.ipch

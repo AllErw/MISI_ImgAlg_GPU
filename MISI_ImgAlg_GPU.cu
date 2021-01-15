@@ -142,7 +142,7 @@ void DMnS_1rec_fixed_pos_GPU(
 	float dist_src_refl, dist_refl_hydr;
 	float si, sj, product = 0.0f;
 
-	float* delayed = (float*)malloc(Nsrc * sizeof(float));
+	float* delayed = (float*)malloc(Nsrc * sizeof(float)); //Allocates memory in RAM, not on GPU!!!
 	memset(delayed, 0.0f, Nsrc * sizeof(float));
 
 	int index = blockIdx.x * blockDim.x + threadIdx.x;
@@ -520,6 +520,9 @@ void SLSC_Nrec_arb_pos_GPU(
    run time errors result! So dividing the image reconstruction into chunks circumvents this problem at the 
    expense of a little overhead.
 */
+
+/* NOTE - ALL CHUNK-STYLE KERNEL CALLS ARE PERFORMED MUCH TOO OFTEN. WHILE EACH OF THOSE CALLS RESULTS IN 
+   EXACTLY ZERO COMPUTATIONS, I IMAGINE THE KERNEL CALL AND NON-COMPUTE PARTS CAUSE SOME OVERHEAD... TRY!   */
 
 // Delay-and-sum (DAS):
 void __declspec(dllexport) DnS_1rec_fixed_pos_GPU_interface(
