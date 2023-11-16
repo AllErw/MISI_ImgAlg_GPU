@@ -4,9 +4,10 @@
 freshly_loaded = 0;
 if ~libisloaded('MISI_CPU')
     warning off;
-    loadlibrary('C:\Users\Erwin Alles\Documents\GitHub\MISI_ImgAlg\x64\Release\MISI_ImgAlg.dll',...
-                'C:\Users\Erwin Alles\Documents\GitHub\MISI_ImgAlg\MISI_ImgAlg.h',...
-                'alias','MISI_CPU');
+%     loadlibrary('C:\Users\Erwin Alles\Documents\GitHub\MISI_ImgAlg\x64\Release\MISI_ImgAlg.dll',...
+%                 'C:\Users\Erwin Alles\Documents\GitHub\MISI_ImgAlg\MISI_ImgAlg.h',...
+%                 'alias','MISI_CPU');
+    loadlibrary('MISI_ImgAlg.dll','MISI_ImgAlg.h','alias','MISI_CPU');
     warning on;
     disp('Library loaded.');
     libfunctionsview('MISI_CPU');
@@ -14,9 +15,10 @@ if ~libisloaded('MISI_CPU')
 end
 if ~libisloaded('MISI_GPU')
     warning off;
-    loadlibrary('C:\Users\Erwin Alles\Documents\GitHub\MISI_ImgAlg_GPU\MISI_ImgAlg_GPU.dll',...
-                'C:\Users\Erwin Alles\Documents\GitHub\MISI_ImgAlg_GPU\MISI_ImgAlg_GPU.h',...
-                'alias','MISI_GPU');
+%     loadlibrary('C:\Users\Erwin Alles\Documents\GitHub\MISI_ImgAlg_GPU\MISI_ImgAlg_GPU.dll',...
+%                 'C:\Users\Erwin Alles\Documents\GitHub\MISI_ImgAlg_GPU\MISI_ImgAlg_GPU.h',...
+%                 'alias','MISI_GPU');
+    loadlibrary('MISI_ImgAlg_GPU.dll','MISI_ImgAlg_GPU.h','alias','MISI_GPU');
     warning on;
     disp('Library loaded.');
     libfunctionsview('MISI_GPU');

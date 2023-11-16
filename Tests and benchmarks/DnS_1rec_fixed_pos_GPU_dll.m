@@ -20,9 +20,9 @@ function img = DnS_1rec_fixed_pos_GPU_dll(rf_data,source_locations,receiver_loca
 %   - img:              [Nimg x 1] matrix containing the raw image data,
 %                       i.e., linear scale, non-envelope-detected.
 
-if ~libisloaded('IntDevImgAlgGPU')
+if ~libisloaded('MISI_ImgAlg_GPU')
     disp('Loading library...');
-    evalc('[notfound,warnings] = loadlibrary(''IntDevImgAlgGPU.dll'',''IntDevImgAlgGPU.h'');');
+    evalc('[notfound,warnings] = loadlibrary(''MISI_ImgAlg_GPU.dll'',''MISI_ImgAlg_GPU.h'');');
     disp('Library loaded.');
 end
 
@@ -46,5 +46,5 @@ if nargin==6
     CUDAparams = int32([1024,128]);
 end
 
-[~,~,~,~,~,img] = calllib('IntDevImgAlgGPU','DnS_1rec_fixed_pos_GPU_chunks_interface',...
+[~,~,~,~,~,img] = calllib('MISI_ImgAlg_GPU','DnS_1rec_fixed_pos_GPU_chunks_interface',...
                           rf_data,source_locations,receiver_location,image_coordinates,c,fsamp,Nsrc,Nt,Nimg,CUDAparams,image);
